@@ -45,3 +45,29 @@ func (h *userController) RegisterUser(c *gin.Context) {
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "success", userResponse)
 	c.JSON(http.StatusOK, response)
 }
+
+func (h *userController) Login(c *gin.Context) {
+	var loginRequest model.LoginRequest
+
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		errors := helper.ValidationError(err)
+		errorMessage := gin.H{"errors": errors}
+
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	loggedin, err := h.userService.Login(loginRequest)
+	if err != nil {
+		errorMessage := gin.H{"errors": err.Error()}
+
+		response := helper.APIResponse("Login failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
+	loginResponse := response.ResponseUser(loggedin, "aweuaweu")
+	response := helper.APIResponse("Successfully loggedin", http.StatusOK, "success", loginResponse)
+	c.JSON(http.StatusOK, response)
+}

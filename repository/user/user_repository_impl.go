@@ -20,3 +20,12 @@ func (r *repository) Save(user entity.User) (entity.User, error) {
 
 	return user, nil
 }
+
+func (r *repository) FindByEmail(email string) (entity.User, error) {
+	var user entity.User
+	if err := r.db.Where("email = ?", email).Find(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
