@@ -37,10 +37,10 @@ func (s *userService) RegisterUser(userRequest model.RegisterRequest) (entity.Us
 	return users, nil
 }
 
-func (s *userService) Login(userRequest model.LoginRequest) (entity.User, error) {
+func (s *userService) Login(loginRequest model.LoginRequest) (entity.User, error) {
 
-	email := userRequest.Email
-	password := userRequest.Password
+	email := loginRequest.Email
+	password := loginRequest.Password
 
 	user, err := s.userRepository.FindByEmail(email)
 	if err != nil {
@@ -57,4 +57,20 @@ func (s *userService) Login(userRequest model.LoginRequest) (entity.User, error)
 	}
 
 	return user, nil
+}
+
+func (s *userService) IsEmailAvailable(checkEmailRequest model.CheckEmailRequest) (bool, error) {
+
+	email := checkEmailRequest.Email
+
+	user, err := s.userRepository.FindByEmail(email)
+	if err != nil {
+		return false, err
+	}
+
+	if user.ID == 0 {
+		return true, nil
+	}
+
+	return false, nil
 }
