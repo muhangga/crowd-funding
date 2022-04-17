@@ -22,11 +22,11 @@ func NewService(userRepository repository.Repository) *userService {
 func (s *userService) RegisterUser(userRequest model.RegisterRequest) (entity.User, error) {
 
 	user := entity.User{
-		Name:    userRequest.Name,
-		Email:   userRequest.Email,
-		Occupation: userRequest.Occupation,
+		Name:         userRequest.Name,
+		Email:        userRequest.Email,
+		Occupation:   userRequest.Occupation,
 		PasswordHash: helper.HashPassword([]byte(userRequest.Password)),
-		Role: "user",
+		Role:         "user",
 	}
 
 	users, err := s.userRepository.Save(user)
@@ -51,8 +51,7 @@ func (s *userService) Login(loginRequest model.LoginRequest) (entity.User, error
 		return user, errors.New("user not found")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) 
-	if err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return user, errors.New("password not match")
 	}
 
@@ -73,4 +72,20 @@ func (s *userService) IsEmailAvailable(checkEmailRequest model.CheckEmailRequest
 	}
 
 	return false, nil
+}
+
+func (s *userService) SaveAvatar(userId int, fileLocation string) (entity.User, error) {
+
+	user, err := s.userRepository.FindByID(userId)
+	if err != nil {
+		return user, err
+	}
+
+	user.AvatarFileName = fileLocation
+	updatedUsers, err := s.userRepository.Update(user)
+	if err != nil {
+		return updatedUsers, err
+	}
+
+	return updatedUsers, nil
 }

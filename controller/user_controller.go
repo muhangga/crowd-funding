@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -72,7 +73,7 @@ func (h *userController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-func(h *userController) CheckEmailAvaible(c *gin.Context) {
+func (h *userController) CheckEmailAvaible(c *gin.Context) {
 	var emailRequest model.CheckEmailRequest
 
 	if err := c.ShouldBindJSON(&emailRequest); err != nil {
@@ -104,4 +105,39 @@ func(h *userController) CheckEmailAvaible(c *gin.Context) {
 
 	response := helper.APIResponse(metaMesasge, http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
+}
+
+func (h *userController) UploadAvatar(c *gin.Context) {
+	file, err := c.FormFile("avatar")
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	userID := 1
+
+	path := fmt.Sprintf("./public/images/avatar//%d-%s", userID, file.Filename)
+
+	if err := c.SaveUploadedFile(file, path); err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	
+	_, err = h.userService.SaveAvatar(userID, path)
+	if err != nil {
+		data := gin.H{"is_uploaded": false}
+		response := helper.APIResponse("Failed to upload avatar image", http.StatusBadRequest, "error", data)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	data := gin.H{"is_uploaded": true}
+	response := helper.APIResponse("Avatar successfully uploaded", http.StatusOK, "success", data)
+	c.JSON(http.StatusOK, response)
+
 }

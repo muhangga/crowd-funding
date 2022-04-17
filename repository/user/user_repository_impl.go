@@ -29,3 +29,20 @@ func (r *repository) FindByEmail(email string) (entity.User, error) {
 
 	return user, nil
 }
+
+func (r *repository) FindByID(ID int) (entity.User, error) {
+	var user entity.User
+	if err := r.db.Where("ID = ?", ID).Find(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (r *repository) Update(user entity.User) (entity.User, error) {
+	if err := r.db.Save(&user).Error; err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
