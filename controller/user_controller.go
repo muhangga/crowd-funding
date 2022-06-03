@@ -10,15 +10,17 @@ import (
 	"github.com/muhangga/model/response"
 
 	model "github.com/muhangga/model/request"
+	"github.com/muhangga/service/auth"
 	user "github.com/muhangga/service/user"
 )
 
 type userController struct {
 	userService user.UserService
+	authService auth.AuthService
 }
 
-func NewUserController(userService user.UserService) *userController {
-	return &userController{userService}
+func NewUserController(userService user.UserService, authService auth.AuthService) *userController {
+	return &userController{userService, authService}
 }
 
 func (h *userController) RegisterUser(c *gin.Context) {
@@ -40,9 +42,14 @@ func (h *userController) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	// token, err := h.jwtService.GenerateToken(user)
+	token, err := h.authService.GenerateToken(user.ID)
+	if err != nil {
+		response := helper.APIResponse("Register account failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
 
-	userResponse := response.ResponseUser(user, "aweuaweu")
+	userResponse := response.ResponseUser(user, token)
 	response := helper.APIResponse("Account has been registered", http.StatusOK, "success", userResponse)
 	c.JSON(http.StatusOK, response)
 }
@@ -68,7 +75,14 @@ func (h *userController) Login(c *gin.Context) {
 		return
 	}
 
-	loginResponse := response.ResponseUser(loggedin, "aweuaweu")
+	token, err := h.authService.GenerateToken(loggedin.ID)
+	if err != nil {
+		response := helper.APIResponse("Login failed", http.StatusBadRequest, "error", nil)
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	loginResponse := response.ResponseUser(loggedin,token)
 	response := helper.APIResponse("Successfully loggedin", http.StatusOK, "success", loginResponse)
 	c.JSON(http.StatusOK, response)
 }
@@ -118,7 +132,7 @@ func (h *userController) UploadAvatar(c *gin.Context) {
 
 	userID := 1
 
-	path := fmt.Sprintf("./public/images/avatar//%d-%s", userID, file.Filename)
+	path := fmt.Sprintf("./public/images/avatar/%d-%s", userID, file.Filename)
 
 	if err := c.SaveUploadedFile(file, path); err != nil {
 		data := gin.H{"is_uploaded": false}
@@ -127,7 +141,6 @@ func (h *userController) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	
 	_, err = h.userService.SaveAvatar(userID, path)
 	if err != nil {
 		data := gin.H{"is_uploaded": false}

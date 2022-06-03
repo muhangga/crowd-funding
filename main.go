@@ -8,6 +8,7 @@ import (
 
 	// model "github.com/muhangga/model/request"
 	repository "github.com/muhangga/repository/user"
+	"github.com/muhangga/service/auth"
 	user "github.com/muhangga/service/user"
 
 	"gorm.io/driver/mysql"
@@ -25,8 +26,11 @@ func main() {
 
 	// User
 	userRepository := repository.NewRepository(db)
+	
 	userService := user.NewService(userRepository)
-	userController := controller.NewUserController(userService)
+	authService := auth.NewService()
+
+	userController := controller.NewUserController(userService, authService)
 
 	router := gin.Default()
 	api := router.Group("api/v1")
