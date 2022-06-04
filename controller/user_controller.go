@@ -8,9 +8,9 @@ import (
 
 	"github.com/muhangga/entity"
 	"github.com/muhangga/helper"
-	"github.com/muhangga/model/response"
+	"github.com/muhangga/web/response"
 
-	model "github.com/muhangga/model/request"
+	web "github.com/muhangga/web/request"
 	"github.com/muhangga/service/auth"
 	"github.com/muhangga/service/user"
 )
@@ -25,7 +25,7 @@ func NewUserController(userService user.UserService, authService auth.AuthServic
 }
 
 func (h *userController) RegisterUser(c *gin.Context) {
-	var userRequest model.RegisterRequest
+	var userRequest web.RegisterRequest
 
 	if err := c.ShouldBindJSON(&userRequest); err != nil {
 		errors := helper.ValidationError(err)
@@ -56,7 +56,7 @@ func (h *userController) RegisterUser(c *gin.Context) {
 }
 
 func (h *userController) Login(c *gin.Context) {
-	var loginRequest model.LoginRequest
+	var loginRequest web.LoginRequest
 
 	if err := c.ShouldBindJSON(&loginRequest); err != nil {
 		errors := helper.ValidationError(err)
@@ -89,7 +89,7 @@ func (h *userController) Login(c *gin.Context) {
 }
 
 func (h *userController) CheckEmailAvaible(c *gin.Context) {
-	var input model.CheckEmailRequest
+	var input web.CheckEmailRequest
 
 	err := c.ShouldBindJSON(&input)
 	if err != nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -11,7 +12,9 @@ import (
 	"github.com/muhangga/helper"
 	"github.com/muhangga/service/auth"
 	"github.com/muhangga/service/user"
-	"github.com/muhangga/repository/user"
+
+	campaignRepository "github.com/muhangga/repository/campaign"
+	userRepository "github.com/muhangga/repository/user"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -26,12 +29,22 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	// User
-	userRepository := repository.NewRepository(db)
+	// Repository
+	userRepository := userRepository.NewUserRepository(db)
+	campaignsRepository := campaignRepository.NewCampaignRepository(db)
 
+	campaigns, err := campaignsRepository.FindByUserID(24)
+
+	fmt.Println(campaigns)
+	for _, campaign := range campaigns {
+		fmt.Println(campaign.Name)
+	}
+
+	// Service
 	userService := user.NewService(userRepository)
 	authService := auth.NewService()
 
+	// Controller
 	userController := controller.NewUserController(userService, authService)
 
 	router := gin.Default()
@@ -45,7 +58,7 @@ func main() {
 	router.Run()
 }
 
-func authMiddleware(authService auth.AuthService,userService user.UserService) gin.HandlerFunc {
+func authMiddleware(authService auth.AuthService, userService user.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 
@@ -61,7 +74,7 @@ func authMiddleware(authService auth.AuthService,userService user.UserService) g
 			tokenString = arrayToken[1]
 		}
 
-		token, err :=  authService.ValidateToken(tokenString)
+		token, err := authService.ValidateToken(tokenString)
 		if err != nil {
 			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)
 			c.AbortWithStatusJSON(http.StatusUnauthorized, response)
@@ -76,7 +89,7 @@ func authMiddleware(authService auth.AuthService,userService user.UserService) g
 		}
 
 		userID := int(claim["user_id"].(float64))
-		
+
 		user, err := userService.GetUserByID(userID)
 		if err != nil {
 			response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", nil)

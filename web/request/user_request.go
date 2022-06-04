@@ -1,4 +1,4 @@
-package model
+package request
 
 type RegisterRequest struct {
 	Name       string `json:"name" binding:"required"`

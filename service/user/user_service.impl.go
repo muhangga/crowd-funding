@@ -5,22 +5,22 @@ import (
 
 	"github.com/muhangga/entity"
 	"github.com/muhangga/helper"
-	"github.com/muhangga/repository/user"
+	repository "github.com/muhangga/repository/user"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/muhangga/model/request"
+	web "github.com/muhangga/web/request"
 )
 
 type userService struct {
-	userRepository repository.Repository
+	userRepository repository.UserRepository
 }
 
-func NewService(userRepository repository.Repository) *userService {
+func NewService(userRepository repository.UserRepository) *userService {
 	return &userService{userRepository}
 }
 
 
-func (s *userService) RegisterUser(userRequest model.RegisterRequest) (entity.User, error) {
+func (s *userService) RegisterUser(userRequest web.RegisterRequest) (entity.User, error) {
 
 	user := entity.User{
 		Name:         userRequest.Name,
@@ -38,7 +38,7 @@ func (s *userService) RegisterUser(userRequest model.RegisterRequest) (entity.Us
 	return users, nil
 }
 
-func (s *userService) Login(loginRequest model.LoginRequest) (entity.User, error) {
+func (s *userService) Login(loginRequest web.LoginRequest) (entity.User, error) {
 
 	email := loginRequest.Email
 	password := loginRequest.Password
@@ -59,7 +59,7 @@ func (s *userService) Login(loginRequest model.LoginRequest) (entity.User, error
 	return user, nil
 }
 
-func (s *userService) IsEmailAvailable(checkEmailRequest model.CheckEmailRequest) (bool, error) {
+func (s *userService) IsEmailAvailable(checkEmailRequest web.CheckEmailRequest) (bool, error) {
 
 	email := checkEmailRequest.Email
 
