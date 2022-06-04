@@ -1,14 +1,14 @@
-package service
+package user
 
 import (
 	"errors"
 
 	"github.com/muhangga/entity"
 	"github.com/muhangga/helper"
+	"github.com/muhangga/repository/user"
 	"golang.org/x/crypto/bcrypt"
 
-	model "github.com/muhangga/model/request"
-	repository "github.com/muhangga/repository/user"
+	"github.com/muhangga/model/request"
 )
 
 type userService struct {
@@ -18,6 +18,7 @@ type userService struct {
 func NewService(userRepository repository.Repository) *userService {
 	return &userService{userRepository}
 }
+
 
 func (s *userService) RegisterUser(userRequest model.RegisterRequest) (entity.User, error) {
 
@@ -88,4 +89,17 @@ func (s *userService) SaveAvatar(userId int, fileLocation string) (entity.User, 
 	}
 
 	return updatedUsers, nil
+}
+
+func (s *userService) GetUserByID(ID int) (entity.User, error) {
+	user, err := s.userRepository.FindByID(ID)
+	if err != nil {
+		return user, err
+	}
+
+	if user.ID == 0 {
+		return user, errors.New("No user found on with that ID")
+	}
+
+	return user, nil
 }

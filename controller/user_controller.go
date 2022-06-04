@@ -6,12 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/muhangga/entity"
 	"github.com/muhangga/helper"
 	"github.com/muhangga/model/response"
 
 	model "github.com/muhangga/model/request"
 	"github.com/muhangga/service/auth"
-	user "github.com/muhangga/service/user"
+	"github.com/muhangga/service/user"
 )
 
 type userController struct {
@@ -82,42 +83,43 @@ func (h *userController) Login(c *gin.Context) {
 		return
 	}
 
-	loginResponse := response.ResponseUser(loggedin,token)
+	loginResponse := response.ResponseUser(loggedin, token)
 	response := helper.APIResponse("Successfully loggedin", http.StatusOK, "success", loginResponse)
 	c.JSON(http.StatusOK, response)
 }
 
 func (h *userController) CheckEmailAvaible(c *gin.Context) {
-	var emailRequest model.CheckEmailRequest
+	var input model.CheckEmailRequest
 
-	if err := c.ShouldBindJSON(&emailRequest); err != nil {
+	err := c.ShouldBindJSON(&input)
+	if err != nil {
 		errors := helper.ValidationError(err)
 		errorMessage := gin.H{"errors": errors}
-
-		response := helper.APIResponse("Email not found", http.StatusUnprocessableEntity, "error", errorMessage)
-		c.JSON(http.StatusUnprocessableEntity, response)
-		return
-	}
-
-	IsEmailAvailable, err := h.userService.IsEmailAvailable(emailRequest)
-	if err != nil {
-		errorMessage := gin.H{"errors": "Server error"}
 
 		response := helper.APIResponse("Email checking failed", http.StatusUnprocessableEntity, "error", errorMessage)
 		c.JSON(http.StatusUnprocessableEntity, response)
 		return
 	}
 
+	isEmailAvailable, err := h.userService.IsEmailAvailable(input)
+	if err != nil {
+		errorMessage := gin.H{"errors": "Server error"}
+		response := helper.APIResponse("Email checking failed", http.StatusUnprocessableEntity, "error", errorMessage)
+		c.JSON(http.StatusUnprocessableEntity, response)
+		return
+	}
+
 	data := gin.H{
-		"is_available": IsEmailAvailable,
+		"is_available": isEmailAvailable,
 	}
 
-	metaMesasge := "Email has been registered"
-	if IsEmailAvailable {
-		metaMesasge = "Email is available"
+	metaMessage := "Email has been registered"
+
+	if isEmailAvailable {
+		metaMessage = "Email is available"
 	}
 
-	response := helper.APIResponse(metaMesasge, http.StatusOK, "success", data)
+	response := helper.APIResponse(metaMessage, http.StatusOK, "success", data)
 	c.JSON(http.StatusOK, response)
 }
 
@@ -130,7 +132,8 @@ func (h *userController) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	userID := 1
+	currentUser := c.MustGet("currentUser").(entity.User)
+	userID := currentUser.ID
 
 	path := fmt.Sprintf("./public/images/avatar/%d-%s", userID, file.Filename)
 

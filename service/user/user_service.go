@@ -1,8 +1,8 @@
-package service
+package user
 
 import (
 	"github.com/muhangga/entity"
-	model "github.com/muhangga/model/request"
+	"github.com/muhangga/model/request"
 )
 
 type UserService interface {
@@ -10,4 +10,7 @@ type UserService interface {
 	Login(userRequest model.LoginRequest) (entity.User, error)
 	IsEmailAvailable(checkEmail model.CheckEmailRequest) (bool, error)
 	SaveAvatar(userID int, fileLocation string) (entity.User, error)
+	GetUserByID(ID int) (entity.User, error)
 }
+
+
